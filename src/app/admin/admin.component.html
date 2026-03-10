@@ -1,0 +1,86 @@
+<div class="admin-page">
+  <!-- Hero Header -->
+  <div class="admin-hero">
+    <div class="hero-content">
+
+      <h1 class="hero-title">Admin Panel</h1>
+      <p class="hero-subtitle">Manage your store settings, categories, and product approvals.</p>
+    </div>
+    <div class="admin-user-badge" *ngIf="authService.currentUser$ | async as user">
+      <div class="user-avatar">{{ user.email.charAt(0).toUpperCase() }}</div>
+      <div class="user-info">
+        <div class="user-email">{{ user.email }}</div>
+        <div class="user-roles">{{ user.roles.join(' · ') }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation Tiles -->
+  <div class="admin-grid">
+    <a routerLink="/admin/categories" class="admin-tile">
+      <div class="tile-icon-wrap categories">
+        <svg class="tile-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+        </svg>
+      </div>
+      <div class="tile-content">
+        <h3>Categories</h3>
+        <p>Create, edit, and manage product categories to organize your store catalog.</p>
+      </div>
+      <div class="tile-arrow">→</div>
+    </a>
+
+    <a routerLink="/admin/products" class="admin-tile">
+      <div class="tile-icon-wrap approval">
+        <svg class="tile-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+          <polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
+      </div>
+      <div class="tile-content">
+        <h3>Product Approval</h3>
+        <p>Review and approve or reject seller product submissions before they go live.</p>
+      </div>
+      <div class="tile-arrow">→</div>
+    </a>
+
+    <a routerLink="/admin/orders" class="admin-tile">
+      <div class="tile-icon-wrap" style="background: rgba(6, 182, 212, 0.1);">
+        <svg class="tile-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+        </svg>
+      </div>
+      <div class="tile-content">
+        <h3>All Orders</h3>
+        <p>View all customer orders, manage statuses, and monitor order fulfillment across the platform.</p>
+      </div>
+      <div class="tile-arrow">→</div>
+    </a>
+  </div>
+
+  <!-- Admin Info Card -->
+  <div class="admin-info-card" *ngIf="authService.currentUser$ | async as user">
+    <h3 class="info-title">Admin Information</h3>
+    <div class="info-rows">
+      <div class="info-row">
+        <span class="info-label">Email</span>
+        <span class="info-value">{{ user.email }}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Roles</span>
+        <span class="info-value">{{ user.roles.join(', ') }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back Link -->
+  <div class="back-link-wrap">
+    <a routerLink="/dashboard" class="btn-back-dashboard">← Back to Dashboard</a>
+  </div>
+</div>

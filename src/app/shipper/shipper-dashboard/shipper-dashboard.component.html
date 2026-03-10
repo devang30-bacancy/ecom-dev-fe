@@ -1,0 +1,96 @@
+<div class="shipper-page">
+    <div class="page-hero">
+        <div class="hero-content">
+            <h1 class="hero-title">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="url(#shipGrad)" stroke-width="2">
+                    <defs>
+                        <linearGradient id="shipGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#f59e0b" />
+                            <stop offset="100%" stop-color="#ef4444" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="1" y="3" width="15" height="13" />
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                    <circle cx="5.5" cy="18.5" r="2.5" />
+                    <circle cx="18.5" cy="18.5" r="2.5" />
+                </svg>
+                Shipper Dashboard
+            </h1>
+            <p class="hero-subtitle">Manage your assigned deliveries and update shipping statuses.</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-bar">
+        <button *ngFor="let f of filters" class="filter-btn" [class.active]="activeFilter === f.value"
+            (click)="setFilter(f.value)">
+            {{ f.label }}
+            <span class="filter-count">{{ getOrderCount(f.value) }}</span>
+        </button>
+    </div>
+
+    <!-- Error -->
+    <div class="alert-error" *ngIf="error">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+        </svg>
+        {{ error }}
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-grid" *ngIf="loading">
+        <div class="skeleton-card" *ngFor="let i of [1,2,3]"></div>
+    </div>
+
+    <!-- Empty -->
+    <div class="empty-state" *ngIf="!loading && filteredOrders.length === 0">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="1.5">
+            <rect x="1" y="3" width="15" height="13" />
+            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+            <circle cx="5.5" cy="18.5" r="2.5" />
+            <circle cx="18.5" cy="18.5" r="2.5" />
+        </svg>
+        <h3>No orders found</h3>
+        <p>{{ activeFilter === 'ALL' ? 'No orders have been assigned to you yet.' : 'No orders match this filter.' }}
+        </p>
+    </div>
+
+    <!-- Orders Grid -->
+    <div class="orders-grid" *ngIf="!loading && filteredOrders.length > 0">
+        <a [routerLink]="['/shipper/orders', order.id]" class="order-card" *ngFor="let order of filteredOrders">
+            <div class="order-card-header">
+                <span class="order-id">#{{ order.id | slice:0:8 }}</span>
+                <span class="status-badge" [ngClass]="getStatusClass(order.status)">{{ order.status.replace('_', ' ')
+                    }}</span>
+            </div>
+            <div class="order-card-body">
+                <div class="order-info-row">
+                    <span class="info-label">Customer</span>
+                    <span class="info-value">{{ order.user?.email || 'N/A' }}</span>
+                </div>
+                <div class="order-info-row">
+                    <span class="info-label">Items</span>
+                    <span class="info-value">{{ getTotalItems(order) }} item(s)</span>
+                </div>
+                <div class="order-info-row">
+                    <span class="info-label">Total</span>
+                    <span class="info-value amount">${{ order.totalAmount | number: '1.2-2' }}</span>
+                </div>
+                <div class="order-info-row" *ngIf="order.shippingCity">
+                    <span class="info-label">Deliver To</span>
+                    <span class="info-value">{{ order.shippingCity }}, {{ order.shippingState }}</span>
+                </div>
+                <div class="order-info-row" *ngIf="order.trackingNumber">
+                    <span class="info-label">Tracking</span>
+                    <span class="info-value tracking">{{ order.trackingNumber }}</span>
+                </div>
+            </div>
+            <div class="order-card-footer">
+                <span class="order-date">{{ order.createdAt | date: 'MMM d, y' }}</span>
+                <span class="view-link">Manage →</span>
+            </div>
+        </a>
+    </div>
+</div>

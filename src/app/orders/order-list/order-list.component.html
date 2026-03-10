@@ -1,0 +1,91 @@
+<div class="orders-page">
+  <div class="orders-header">
+    <h1 class="orders-title">
+      <span>📦</span> My Orders
+    </h1>
+    <a routerLink="/products" class="btn-shop-more">
+      + Shop More
+    </a>
+  </div>
+
+  <!-- Error -->
+  <div class="alert-error" *ngIf="error">
+    <span>⚠️</span> {{ error }}
+  </div>
+
+  <!-- Loading Skeleton -->
+  <div class="orders-skeleton" *ngIf="loading">
+    <div class="skeleton-card" *ngFor="let i of [1,2,3]">
+      <div class="skeleton-header">
+        <div class="skeleton sk-text wide"></div>
+        <div class="skeleton sk-badge"></div>
+      </div>
+      <div class="skeleton sk-text medium"></div>
+      <div class="skeleton sk-text short"></div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-orders" *ngIf="!loading && orders.length === 0">
+    <div class="empty-illustration">
+      <div class="empty-icon">📦</div>
+      <h2>No orders yet</h2>
+      <p>When you place your first order, it will appear here.</p>
+      <a routerLink="/products" class="btn-start-shopping">
+        Start Shopping
+      </a>
+    </div>
+  </div>
+
+  <!-- Orders List -->
+  <div class="orders-list" *ngIf="!loading && orders.length > 0">
+    <div class="order-card" *ngFor="let order of orders">
+      <div class="order-card-header">
+        <div class="order-id-section">
+          <span class="order-label">Order</span>
+          <span class="order-id">#{{ order.id | slice:0:8 }}...</span>
+        </div>
+        <div [class]="'status-badge ' + getStatusClass(order.status)">
+          <span>{{ getStatusIcon(order.status) }}</span>
+          {{ order.status }}
+        </div>
+      </div>
+
+      <div class="order-card-body">
+        <div class="order-meta">
+          <div class="meta-item">
+            <span class="meta-label">📅 Date</span>
+            <span class="meta-value">{{ order.createdAt | date: 'MMM d, yyyy' }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">🛍️ Items</span>
+            <span class="meta-value">{{ getTotalItems(order) }} item(s)</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">💰 Total</span>
+            <span class="meta-value price">${{ order.totalAmount | number: '1.2-2' }}</span>
+          </div>
+        </div>
+
+        <!-- Items Preview -->
+        <div class="items-preview">
+          <span
+            class="item-chip"
+            *ngFor="let item of (order.items | slice:0:3)"
+          >
+            {{ item.productNameSnapshot }}
+          </span>
+          <span class="item-chip more" *ngIf="order.items && order.items.length > 3">
+            +{{ order.items.length - 3 }} more
+          </span>
+        </div>
+      </div>
+
+      <div class="order-card-footer">
+        <a [routerLink]="['/orders', order.id]" class="btn-view-details">
+          View Details →
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,174 @@
+<div class="order-detail-page">
+  <!-- Header -->
+  <div class="detail-header">
+    <a routerLink="/orders" class="back-link">← Back to Orders</a>
+    <h1 class="detail-title">Order Details</h1>
+  </div>
+
+  <!-- Error -->
+  <div class="alert-error" *ngIf="error">
+    <span>⚠️</span> {{ error }}
+  </div>
+
+  <!-- Loading Skeleton -->
+  <div class="detail-skeleton" *ngIf="loading">
+    <div class="skeleton-row">
+      <div class="skeleton sk-wide"></div>
+      <div class="skeleton sk-badge"></div>
+    </div>
+    <div class="skeleton sk-timeline"></div>
+    <div class="skeleton sk-block"></div>
+    <div class="skeleton sk-block"></div>
+  </div>
+
+  <!-- Content -->
+  <div class="detail-content" *ngIf="!loading && order">
+    <!-- Order Info Card -->
+    <div class="order-info-card">
+      <div class="order-info-left">
+        <div class="order-number">
+          <span class="label">Order ID</span>
+          <span class="value">#{{ order.id | slice:0:8 }}...</span>
+        </div>
+        <div class="order-date">
+          <span class="label">Placed on</span>
+          <span class="value">{{ order.createdAt | date: 'MMMM d, yyyy, h:mm a' }}</span>
+        </div>
+      </div>
+      <div [class]="'status-badge ' + getStatusClass(order.status)">
+        {{ order.status }}
+      </div>
+    </div>
+
+    <!-- Cancelled Banner -->
+    <div class="cancelled-banner" *ngIf="isCancelled()">
+      <span>❌</span>
+      This order has been cancelled.
+    </div>
+
+    <!-- Order Timeline -->
+    <div class="timeline-card" *ngIf="!isCancelled()">
+      <h3 class="card-title">Order Timeline</h3>
+      <div class="timeline">
+        <div class="timeline-step" *ngFor="let step of timelineSteps; let last = last"
+          [class.completed]="isStepCompleted(step.status)" [class.active]="isStepActive(step.status)">
+          <div class="step-connector" *ngIf="!last"></div>
+          <div class="step-icon-wrap">
+            <div class="step-circle">
+              <span *ngIf="isStepCompleted(step.status)">✓</span>
+              <span *ngIf="!isStepCompleted(step.status)">{{ step.icon }}</span>
+            </div>
+          </div>
+          <div class="step-label-wrap">
+            <div class="step-label">{{ step.label }}</div>
+            <div class="step-desc">{{ step.description }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Items List -->
+    <div class="items-card">
+      <h3 class="card-title">Ordered Items ({{ order.items.length }})</h3>
+
+      <div class="items-table-header">
+        <span>Product</span>
+        <span>Price</span>
+        <span>Qty</span>
+        <span>Subtotal</span>
+      </div>
+
+      <div class="order-item-row" *ngFor="let item of order.items">
+        <div class="item-name-col">
+          <div class="item-icon">📦</div>
+          <div class="item-name-info">
+            <span class="item-name">{{ item.productNameSnapshot }}</span>
+            <span class="item-id">ID: {{ item.productId | slice:0:8 }}...</span>
+          </div>
+        </div>
+        <div class="item-price">${{ item.priceSnapshot | number: '1.2-2' }}</div>
+        <div class="item-qty">
+          <span class="qty-pill">× {{ item.quantity }}</span>
+        </div>
+        <div class="item-subtotal">${{ item.subtotal | number: '1.2-2' }}</div>
+      </div>
+    </div>
+
+    <!-- Price Summary -->
+    <div class="price-summary-card">
+      <h3 class="card-title">Order Summary</h3>
+
+      <div class="summary-row" *ngFor="let item of order.items">
+        <span>{{ item.productNameSnapshot }} × {{ item.quantity }}</span>
+        <span>${{ item.subtotal | number: '1.2-2' }}</span>
+      </div>
+
+      <div class="summary-row shipping">
+        <span>🚚 Shipping</span>
+        <span class="free">FREE</span>
+      </div>
+
+      <div class="summary-divider"></div>
+
+      <div class="summary-total">
+        <span>Total Amount</span>
+        <span class="total-value">${{ order.totalAmount | number: '1.2-2' }}</span>
+      </div>
+
+      <div class="payment-badge-row" *ngIf="order.paymentStatus">
+        <span class="payment-label">Payment</span>
+        <span class="payment-status-badge" [class.paid]="order.paymentStatus === 'PAID'"
+          [class.pending]="order.paymentStatus === 'PENDING'">
+          {{ order.paymentStatus }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Shipping Address -->
+    <div class="shipping-card" *ngIf="order.shippingAddress">
+      <h3 class="card-title">📍 Shipping Address</h3>
+      <p class="address-text">
+        {{ order.shippingAddress }}<br>
+        {{ order.shippingCity }}, {{ order.shippingState }} {{ order.shippingZip }}<br>
+        {{ order.shippingCountry }}
+      </p>
+    </div>
+
+    <!-- Tracking Info -->
+    <div class="tracking-card" *ngIf="order.trackingNumber || order.shipper">
+      <h3 class="card-title">🚚 Shipping Details</h3>
+      <div class="tracking-rows">
+        <div class="tracking-row" *ngIf="order.trackingNumber">
+          <span class="tracking-label">Tracking Number</span>
+          <span class="tracking-value">{{ order.trackingNumber }}</span>
+        </div>
+        <div class="tracking-row" *ngIf="order.shipper">
+          <span class="tracking-label">Shipper</span>
+          <span class="tracking-value">{{ order.shipper.email }}</span>
+        </div>
+        <div class="tracking-row" *ngIf="order.shippedAt">
+          <span class="tracking-label">Shipped</span>
+          <span class="tracking-value">{{ order.shippedAt | date: 'MMM d, y h:mm a' }}</span>
+        </div>
+        <div class="tracking-row" *ngIf="order.deliveredAt">
+          <span class="tracking-label">Delivered</span>
+          <span class="tracking-value">{{ order.deliveredAt | date: 'MMM d, y h:mm a' }}</span>
+        </div>
+        <div class="tracking-row" *ngIf="order.shipperNotes">
+          <span class="tracking-label">Notes</span>
+          <span class="tracking-value">{{ order.shipperNotes }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="detail-actions">
+      <a routerLink="/orders" class="btn-back-orders">
+        ← Back to Orders
+      </a>
+      <a routerLink="/products" class="btn-shop-again">
+        🛍️ Shop Again
+      </a>
+    </div>
+  </div>
+</div>

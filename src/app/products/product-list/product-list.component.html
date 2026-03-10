@@ -1,0 +1,74 @@
+<div class="products-container">
+  <div class="products-header">
+    <h1>Products</h1>
+    <div class="search-bar">
+      <input
+        type="text"
+        placeholder="Search products..."
+        [(ngModel)]="searchTerm"
+        (keyup.enter)="onSearch()"
+        class="search-input"
+      />
+      <button (click)="onSearch()" class="search-button">Search</button>
+    </div>
+  </div>
+
+  <div class="error-message" *ngIf="error">{{ error }}</div>
+
+  <div class="loading" *ngIf="loading">
+    <p>Loading products...</p>
+  </div>
+
+  <div class="products-grid" *ngIf="!loading && products.length > 0">
+    <div class="product-card" *ngFor="let product of products">
+      <a [routerLink]="['/products', product.id]" class="product-card-link">
+        <div class="product-image">
+          <img
+            [src]="product.images && product.images.length > 0 ? product.images[0] : '/assets/placeholder.png'"
+            [alt]="product.name"
+            onerror="this.src='/assets/placeholder.png'"
+          />
+          <div class="product-overlay">
+            <span class="view-details">View Details</span>
+          </div>
+        </div>
+        <div class="product-info">
+          <h3 class="product-name">{{ product.name }}</h3>
+          <p class="product-description">{{ product.description || 'No description available' }}</p>
+          <div class="product-meta">
+            <span class="product-category" *ngIf="product.category">{{ product.category.name }}</span>
+            <span class="product-status" [class.approved]="product.status === 'APPROVED'">
+              {{ product.status }}
+            </span>
+          </div>
+          <div class="product-footer">
+            <span class="product-price">${{ product.price | number: '1.2-2' }}</span>
+            <span class="product-stock" [class.in-stock]="product.stock > 0" [class.out-of-stock]="product.stock === 0">
+              {{ product.stock > 0 ? 'In Stock' : 'Out of Stock' }}
+            </span>
+          </div>
+        </div>
+      </a>
+
+      <!-- Add to Cart Button -->
+      <div class="card-actions" *ngIf="product.stock > 0 && product.status === 'APPROVED'">
+        <button
+          class="btn-add-cart"
+          [class.added]="addedToCartId === product.id"
+          [disabled]="addingToCartId === product.id"
+          (click)="addToCart($event, product)"
+        >
+          <span *ngIf="addingToCartId !== product.id && addedToCartId !== product.id">
+            🛒 Add to Cart
+          </span>
+          <span *ngIf="addingToCartId === product.id">Adding...</span>
+          <span *ngIf="addedToCartId === product.id">✅ Added!</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="no-products" *ngIf="!loading && products.length === 0">
+    <p>No products found.</p>
+  </div>
+</div>

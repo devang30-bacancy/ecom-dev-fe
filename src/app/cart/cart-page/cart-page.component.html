@@ -1,0 +1,165 @@
+<div class="cart-page">
+  <div class="cart-header">
+    <h1 class="cart-title">
+      <span class="cart-icon">🛒</span>
+      My Cart
+      <span class="item-count-badge" *ngIf="cart && cart.items?.length">
+        {{ getTotalItems() }} items
+      </span>
+    </h1>
+    <a routerLink="/products" class="continue-shopping">
+      ← Continue Shopping
+    </a>
+  </div>
+
+  <!-- Error -->
+  <div class="alert-error" *ngIf="error">
+    <span>⚠️</span> {{ error }}
+    <button (click)="error = ''">✕</button>
+  </div>
+
+  <!-- Loading Skeleton -->
+  <div class="cart-skeleton" *ngIf="loading">
+    <div class="skeleton-item" *ngFor="let i of [1,2,3]">
+      <div class="skeleton skeleton-image"></div>
+      <div class="skeleton-info">
+        <div class="skeleton skeleton-text wide"></div>
+        <div class="skeleton skeleton-text medium"></div>
+        <div class="skeleton skeleton-text short"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty Cart -->
+  <div class="empty-cart" *ngIf="!loading && (!cart || !cart.items || cart.items.length === 0)">
+    <div class="empty-cart-illustration">
+      <div class="empty-icon">🛒</div>
+      <h2>Your cart is empty</h2>
+      <p>Looks like you haven't added anything to your cart yet.</p>
+      <a routerLink="/products" class="btn-shop-now">
+        Start Shopping
+      </a>
+    </div>
+  </div>
+
+  <!-- Cart Content -->
+  <div class="cart-layout" *ngIf="!loading && cart && cart.items && cart.items.length > 0">
+    <!-- Items List -->
+    <div class="cart-items-section">
+      <div class="cart-items-header">
+        <span>Product</span>
+        <span>Price</span>
+        <span>Quantity</span>
+        <span>Subtotal</span>
+        <span></span>
+      </div>
+
+      <div
+        class="cart-item-card"
+        *ngFor="let item of cart.items"
+        [class.updating]="updatingItemId === item.id"
+      >
+        <div class="item-product">
+          <div class="item-image-wrap">
+            <img
+              [src]="getProductImage(item) || '/assets/placeholder.png'"
+              [alt]="item.product.name"
+              onerror="this.src='/assets/placeholder.png'"
+              class="item-image"
+            />
+          </div>
+          <div class="item-info">
+            <a [routerLink]="['/products', item.productId]" class="item-name">
+              {{ item.product.name }}
+            </a>
+            <span class="item-category" *ngIf="item.product.category">
+              {{ item.product.category.name }}
+            </span>
+            <span class="item-stock" [class.low-stock]="item.product.stock < 5">
+              {{ item.product.stock > 0 ? item.product.stock + ' in stock' : 'Out of stock' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="item-price">
+          ${{ item.priceSnapshot | number: '1.2-2' }}
+        </div>
+
+        <div class="item-quantity">
+          <div class="qty-stepper">
+            <button
+              class="qty-btn"
+              (click)="decreaseQuantity(item)"
+              [disabled]="updatingItemId === item.id"
+            >−</button>
+            <span class="qty-value">{{ item.quantity }}</span>
+            <button
+              class="qty-btn"
+              (click)="increaseQuantity(item)"
+              [disabled]="updatingItemId === item.id || item.quantity >= item.product.stock"
+            >+</button>
+          </div>
+        </div>
+
+        <div class="item-subtotal">
+          ${{ getSubtotal(item) | number: '1.2-2' }}
+        </div>
+
+        <div class="item-actions">
+          <button
+            class="btn-remove"
+            (click)="removeItem(item)"
+            [disabled]="updatingItemId === item.id"
+            title="Remove item"
+          >
+            🗑️
+          </button>
+        </div>
+      </div>
+
+      <div class="cart-actions-bar">
+        <button class="btn-clear-cart" (click)="clearCart()">
+          🗑️ Clear Cart
+        </button>
+      </div>
+    </div>
+
+    <!-- Order Summary Panel -->
+    <div class="order-summary-panel">
+      <div class="summary-card">
+        <h3 class="summary-title">Order Summary</h3>
+
+        <div class="summary-lines">
+          <div class="summary-line" *ngFor="let item of cart.items">
+            <span class="summary-item-name">{{ item.product.name }} × {{ item.quantity }}</span>
+            <span class="summary-item-price">${{ getSubtotal(item) | number: '1.2-2' }}</span>
+          </div>
+        </div>
+
+        <div class="summary-divider"></div>
+
+        <div class="summary-total-line">
+          <span class="summary-total-label">Total</span>
+          <span class="summary-total-amount">${{ getCartTotal() | number: '1.2-2' }}</span>
+        </div>
+
+        <div class="summary-info">
+          <span>🚚</span>
+          <span>Free shipping on all orders</span>
+        </div>
+
+        <button
+          class="btn-checkout"
+          (click)="proceedToCheckout()"
+          [disabled]="!cart || !cart.items || cart.items.length === 0"
+        >
+          Proceed to Checkout →
+        </button>
+
+        <a routerLink="/products" class="btn-continue">
+          ← Continue Shopping
+        </a>
+      </div>
+    </div>
+  </div>
+</div>

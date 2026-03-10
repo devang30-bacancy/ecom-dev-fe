@@ -1,0 +1,87 @@
+<div class="card">
+  <h2>Register</h2>
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input
+        type="email"
+        id="email"
+        formControlName="email"
+        [class.error-input]="isFieldInvalid('email')"
+      />
+      <div class="error" *ngIf="isFieldInvalid('email')">
+        <span *ngIf="registerForm.get('email')?.errors?.['required']">Email is required</span>
+        <span *ngIf="registerForm.get('email')?.errors?.['email']">Valid email is required</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input
+        type="password"
+        id="password"
+        formControlName="password"
+        [class.error-input]="isFieldInvalid('password')"
+      />
+      <div class="error" *ngIf="isFieldInvalid('password')">
+        <span *ngIf="registerForm.get('password')?.errors?.['required']">Password is required</span>
+        <span *ngIf="registerForm.get('password')?.errors?.['minlength']">
+          Password must be at least 8 characters
+        </span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="confirmPassword">Confirm Password</label>
+      <input
+        type="password"
+        id="confirmPassword"
+        formControlName="confirmPassword"
+        [class.error-input]="isFieldInvalid('confirmPassword') || passwordsDoNotMatch()"
+      />
+      <div class="error" *ngIf="isFieldInvalid('confirmPassword')">
+        <span *ngIf="registerForm.get('confirmPassword')?.errors?.['required']">
+          Please confirm your password
+        </span>
+      </div>
+      <div class="error" *ngIf="passwordsDoNotMatch() && registerForm.get('confirmPassword')?.touched">
+        Passwords do not match
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Select Roles (at least one)</label>
+      <div class="roles-container">
+        <label class="role-checkbox" *ngFor="let role of availableRoles">
+          <input
+            type="checkbox"
+            [value]="role"
+            [checked]="isRoleSelected(role)"
+            (change)="toggleRole(role)"
+          />
+          <span>{{ getRoleLabel(role) }}</span>
+        </label>
+      </div>
+      <div class="error" *ngIf="selectedRoles.length === 0 && registerForm.get('roles')?.touched">
+        Please select at least one role
+      </div>
+    </div>
+
+    <div class="error" *ngIf="error">{{ error }}</div>
+    <div class="success" *ngIf="success">{{ success }}</div>
+
+    <button
+      type="submit"
+      [disabled]="registerForm.invalid || passwordsDoNotMatch() || selectedRoles.length === 0 || loading"
+    >
+      {{ loading ? 'Registering...' : 'Register' }}
+    </button>
+  </form>
+
+  <p class="link-text">
+    Already have an account?
+    <a routerLink="/login" class="link">Login here</a>
+  </p>
+</div>
+
+

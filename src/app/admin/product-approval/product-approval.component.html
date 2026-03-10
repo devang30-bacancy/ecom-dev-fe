@@ -1,0 +1,105 @@
+<div class="product-approval-container">
+  <div class="approval-header">
+    <h1>Product Approval</h1>
+  </div>
+
+  <div class="error-message" *ngIf="error">{{ error }}</div>
+  <div class="success-message" *ngIf="success">{{ success }}</div>
+
+  <div class="loading" *ngIf="loading && products.length === 0">
+    <div class="spinner"></div>
+    <p>Loading products...</p>
+  </div>
+
+  <div class="products-grid" *ngIf="!loading || products.length > 0">
+    <div class="product-approval-card" *ngFor="let product of products">
+      <div class="product-image">
+        <img
+          [src]="product.images && product.images.length > 0 ? product.images[0] : '/assets/placeholder.png'"
+          [alt]="product.name"
+          onerror="this.src='/assets/placeholder.png'"
+        />
+        <span class="status-overlay" 
+              [class.pending]="product.status === 'PENDING'"
+              [class.approved]="product.status === 'APPROVED'"
+              [class.rejected]="product.status === 'REJECTED'">
+          {{ product.status }}
+        </span>
+      </div>
+
+      <div class="product-content">
+        <div class="product-header">
+          <h3 class="product-name">{{ product.name }}</h3>
+          <span class="product-category" *ngIf="product.category">
+            {{ product.category.name }}
+          </span>
+        </div>
+
+        <p class="product-description">{{ product.description || 'No description available' }}</p>
+
+        <div class="product-details-grid">
+          <div class="detail-item">
+            <span class="detail-icon">💰</span>
+            <div class="detail-content">
+              <span class="detail-label">Price</span>
+              <span class="detail-value">${{ product.price | number: '1.2-2' }}</span>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-icon">📦</span>
+            <div class="detail-content">
+              <span class="detail-label">Stock</span>
+              <span class="detail-value">{{ product.stock }} units</span>
+            </div>
+          </div>
+
+          <div class="detail-item" *ngIf="product.seller">
+            <span class="detail-icon">👤</span>
+            <div class="detail-content">
+              <span class="detail-label">Seller</span>
+              <span class="detail-value">{{ product.seller.email }}</span>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <span class="detail-icon">{{ product.isActive ? '✅' : '❌' }}</span>
+            <div class="detail-content">
+              <span class="detail-label">Active</span>
+              <span class="detail-value">{{ product.isActive ? 'Yes' : 'No' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-actions">
+          <button 
+            class="btn btn-success" 
+            (click)="approveProduct(product.id)"
+            [disabled]="loading"
+            *ngIf="product.status !== 'APPROVED'">
+            <span>✓</span> Approve
+          </button>
+
+          <button 
+            class="btn btn-danger" 
+            (click)="rejectProduct(product.id)"
+            [disabled]="loading"
+            *ngIf="product.status !== 'REJECTED'">
+            <span>✗</span> Reject
+          </button>
+
+          <button 
+            class="btn btn-secondary" 
+            (click)="toggleProductStatus(product.id)"
+            [disabled]="loading">
+            <span>🔄</span> {{ product.isActive ? 'Deactivate' : 'Activate' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="no-products" *ngIf="!loading && products.length === 0">
+    <p>No products found for approval.</p>
+  </div>
+</div>

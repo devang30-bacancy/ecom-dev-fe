@@ -1,0 +1,45 @@
+<div class="card">
+  <div *ngIf="loading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <h2>Processing Google Login...</h2>
+    <p>Please wait while we authenticate you.</p>
+  </div>
+  <div *ngIf="error" class="error-container">
+    <div class="error-header">
+      <svg class="error-icon" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+        <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      <h2>Login Failed</h2>
+    </div>
+    
+    <div *ngIf="isEmailConflictError" class="warning-box">
+      <h3>Account Already Exists</h3>
+      <p>
+        This email address is already registered with a different login method (email/password).
+      </p>
+      <p class="warning-bold">
+        Please use your email and password to login instead.
+      </p>
+    </div>
+    
+    <div *ngIf="!isEmailConflictError" class="error-box">
+      <p>{{ error }}</p>
+    </div>
+
+    <div class="actions">
+      <button (click)="goToLogin()" class="primary-button">
+        Go to Login
+      </button>
+      <button
+        *ngIf="isEmailConflictError"
+        (click)="goToRegister()"
+        class="secondary-button"
+      >
+        Register
+      </button>
+    </div>
+  </div>
+</div>
+
+

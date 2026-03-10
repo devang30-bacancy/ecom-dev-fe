@@ -1,0 +1,260 @@
+<div class="shipper-detail-page">
+    <a routerLink="/shipper/orders" class="back-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12" />
+            <polyline points="12 19 5 12 12 5" />
+        </svg>
+        Back to Dashboard
+    </a>
+
+    <!-- Loading -->
+    <div class="skeleton-wrap" *ngIf="loading">
+        <div class="skeleton-block large"></div>
+        <div class="skeleton-block"></div>
+    </div>
+
+    <!-- Error -->
+    <div class="alert-error" *ngIf="error && !loading">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+        </svg>
+        {{ error }}
+    </div>
+
+    <!-- Success -->
+    <div class="alert-success" *ngIf="success">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
+        {{ success }}
+    </div>
+
+    <div class="detail-layout" *ngIf="order && !loading">
+        <!-- Left: Order Info -->
+        <div class="detail-main">
+            <!-- Header -->
+            <div class="section-card">
+                <div class="order-header">
+                    <div>
+                        <h1 class="order-title">Order #{{ order.id | slice:0:8 }}</h1>
+                        <p class="order-date">{{ order.createdAt | date: 'MMMM d, y, h:mm a' }}</p>
+                    </div>
+                    <span class="status-badge" [ngClass]="getStatusClass(order.status)">
+                        {{ order.status.replace('_', ' ') }}
+                    </span>
+                </div>
+
+                <!-- Timeline -->
+                <div class="timeline">
+                    <div class="timeline-step" *ngFor="let step of timelineSteps"
+                        [class.completed]="isStepCompleted(step.status)" [class.active]="isStepActive(step.status)">
+                        <div class="timeline-dot">{{ step.icon }}</div>
+                        <div class="timeline-label">{{ step.label }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delivery Address -->
+            <div class="section-card" *ngIf="order.shippingAddress">
+                <h3 class="section-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                        <circle cx="12" cy="10" r="3" />
+                    </svg>
+                    Delivery Address
+                </h3>
+                <p class="address-text">
+                    {{ order.shippingAddress }}<br>
+                    {{ order.shippingCity }}, {{ order.shippingState }} {{ order.shippingZip }}<br>
+                    {{ order.shippingCountry }}
+                </p>
+            </div>
+
+            <!-- Customer Info -->
+            <div class="section-card" *ngIf="order.user">
+                <h3 class="section-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                    </svg>
+                    Customer
+                </h3>
+                <div class="info-rows">
+                    <div class="info-row">
+                        <span class="label">Email</span>
+                        <span class="value">{{ order.user.email }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items -->
+            <div class="section-card">
+                <h3 class="section-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+                        <line x1="3" y1="6" x2="21" y2="6" />
+                        <path d="M16 10a4 4 0 0 1-8 0" />
+                    </svg>
+                    Order Items
+                </h3>
+                <div class="items-list">
+                    <div class="item-row" *ngFor="let item of order.items">
+                        <div class="item-info">
+                            <span class="item-name">{{ item.productNameSnapshot }}</span>
+                            <span class="item-meta">Qty: {{ item.quantity }} × ${{ item.priceSnapshot |
+                                number:'1.2-2' }}</span>
+                        </div>
+                        <span class="item-subtotal">${{ item.subtotal | number:'1.2-2' }}</span>
+                    </div>
+                </div>
+                <div class="items-total">
+                    <span>Total</span>
+                    <span class="total-amount">${{ order.totalAmount | number:'1.2-2' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Actions -->
+        <div class="detail-sidebar">
+
+            <!-- ⚡ Quick Actions -->
+            <div class="section-card quick-actions-card"
+                *ngIf="order.status !== OrderStatus.DELIVERED && order.status !== OrderStatus.CANCELLED">
+                <h3 class="section-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+                    </svg>
+                    Quick Actions
+                </h3>
+
+                <!-- Tracking number (required for shipping) -->
+                <div class="form-group" *ngIf="order.status === OrderStatus.CONFIRMED">
+                    <label>Tracking Number</label>
+                    <input type="text" [(ngModel)]="trackingNumber" placeholder="Enter tracking number (optional)" />
+                </div>
+
+                <div class="form-group">
+                    <label>Notes (optional)</label>
+                    <textarea [(ngModel)]="shipperNotes" placeholder="Add delivery notes..." rows="2"></textarea>
+                </div>
+
+                <div class="quick-btns">
+                    <ng-container *ngFor="let action of quickActions">
+                        <button *ngIf="isActionAllowed(action)" class="btn-quick"
+                            [ngClass]="'btn-quick-' + action.color" (click)="quickUpdate(action.value)"
+                            [disabled]="updating">
+                            <span *ngIf="!updating">
+                                <!-- ship icon -->
+                                <svg *ngIf="action.icon === 'ship'" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="1" y="3" width="15" height="13" />
+                                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                                    <circle cx="5.5" cy="18.5" r="2.5" />
+                                    <circle cx="18.5" cy="18.5" r="2.5" />
+                                </svg>
+                                <!-- pin icon -->
+                                <svg *ngIf="action.icon === 'pin'" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                                    <circle cx="12" cy="10" r="3" />
+                                </svg>
+                                <!-- check icon -->
+                                <svg *ngIf="action.icon === 'check'" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                                {{ action.label }}
+                            </span>
+                            <span *ngIf="updating" class="btn-loading">
+                                <span class="spinner-small"></span> Updating…
+                            </span>
+                        </button>
+                    </ng-container>
+                </div>
+            </div>
+
+            <!-- Delivered state -->
+            <div class="section-card delivered-card" *ngIf="order.status === OrderStatus.DELIVERED">
+                <div class="delivered-badge">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                    </svg>
+                    <span>Delivered!</span>
+                </div>
+                <p class="delivered-msg">This order has been successfully delivered.</p>
+            </div>
+
+            <!-- Full Form: manual status select (fallback / advanced) -->
+            <div class="section-card action-card"
+                *ngIf="order.status !== OrderStatus.DELIVERED && order.status !== OrderStatus.CANCELLED">
+                <h3 class="section-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2">
+                        <rect x="1" y="3" width="15" height="13" />
+                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                        <circle cx="5.5" cy="18.5" r="2.5" />
+                        <circle cx="18.5" cy="18.5" r="2.5" />
+                    </svg>
+                    Manual Update
+                </h3>
+
+                <div class="form-group">
+                    <label>Select Status</label>
+                    <select [(ngModel)]="selectedStatus">
+                        <option value="">— Select Status —</option>
+                        <option value="SHIPPED">Mark as Shipped</option>
+                        <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
+                        <option value="DELIVERED">Mark as Delivered</option>
+                    </select>
+                </div>
+
+                <button class="btn-update" (click)="updateStatus()" [disabled]="!selectedStatus || updating">
+                    <span *ngIf="!updating">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                            <polyline points="22 4 12 14.01 9 11.01" />
+                        </svg>
+                        Update Status
+                    </span>
+                    <span *ngIf="updating" class="btn-loading">
+                        <span class="spinner-small"></span> Updating...
+                    </span>
+                </button>
+            </div>
+
+            <!-- Shipping Info Summary -->
+            <div class="section-card"
+                *ngIf="order.trackingNumber || order.shippedAt || order.deliveredAt || order.shipperNotes">
+                <h3 class="section-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    Shipping Info
+                </h3>
+                <div class="info-rows">
+                    <div class="info-row" *ngIf="order.trackingNumber">
+                        <span class="label">Tracking</span>
+                        <span class="value tracking">{{ order.trackingNumber }}</span>
+                    </div>
+                    <div class="info-row" *ngIf="order.shippedAt">
+                        <span class="label">Shipped At</span>
+                        <span class="value">{{ order.shippedAt | date:'MMM d, y h:mm a' }}</span>
+                    </div>
+                    <div class="info-row" *ngIf="order.deliveredAt">
+                        <span class="label">Delivered At</span>
+                        <span class="value delivered-text">{{ order.deliveredAt | date:'MMM d, y h:mm a' }}</span>
+                    </div>
+                    <div class="info-row" *ngIf="order.shipperNotes">
+                        <span class="label">Notes</span>
+                        <span class="value">{{ order.shipperNotes }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

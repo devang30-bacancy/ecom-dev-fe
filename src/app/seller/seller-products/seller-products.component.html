@@ -1,0 +1,54 @@
+<div class="products-container">
+  <div class="products-header">
+    <h1>My Products</h1>
+    <a routerLink="/seller/products/new" class="btn btn-primary">
+      <span>➕</span> Add New Product
+    </a>
+  </div>
+
+  <div class="error-message" *ngIf="error">{{ error }}</div>
+  <div class="success-message" *ngIf="success">{{ success }}</div>
+
+  <div class="loading" *ngIf="loading && products.length === 0">
+    <p>Loading products...</p>
+  </div>
+
+  <div class="products-grid" *ngIf="!loading || products.length > 0">
+    <div class="product-card" *ngFor="let product of products">
+      <div class="product-image">
+        <img
+          [src]="product.images && product.images.length > 0 ? product.images[0] : '/assets/placeholder.png'"
+          [alt]="product.name"
+          onerror="this.src='/assets/placeholder.png'"
+        />
+      </div>
+      <div class="product-info">
+        <h3 class="product-name">{{ product.name }}</h3>
+        <p class="product-description">{{ product.description || 'No description available' }}</p>
+        <div class="product-meta">
+          <span class="product-category" *ngIf="product.category">{{ product.category.name }}</span>
+          <span class="product-status" 
+                [class.approved]="product.status === 'APPROVED'"
+                [class.pending]="product.status === 'PENDING'"
+                [class.rejected]="product.status === 'REJECTED'">
+            {{ product.status }}
+          </span>
+        </div>
+        <div class="product-footer">
+          <span class="product-price">${{ product.price | number: '1.2-2' }}</span>
+          <span class="product-stock" [class.in-stock]="product.stock > 0" [class.out-of-stock]="product.stock === 0">
+            {{ product.stock > 0 ? 'In Stock' : 'Out of Stock' }}
+          </span>
+        </div>
+        <div class="product-actions">
+          <a [routerLink]="['/seller/products', product.id, 'edit']" class="btn btn-edit">Edit</a>
+          <button class="btn btn-delete" (click)="deleteProduct(product.id)">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="no-products" *ngIf="!loading && products.length === 0">
+    <p>No products found. <a routerLink="/seller/products/new">Create your first product</a></p>
+  </div>
+</div>

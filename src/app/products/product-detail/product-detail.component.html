@@ -1,0 +1,133 @@
+<div class="product-detail-container">
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading product details...</p>
+  </div>
+
+  <div class="error-message" *ngIf="error">{{ error }}</div>
+
+  <div class="product-detail-content" *ngIf="product && !loading">
+    <button class="btn-back" (click)="goBack()">
+      <span>←</span> Back to Products
+    </button>
+
+    <div class="product-detail-grid">
+      <div class="product-images">
+        <div class="main-image">
+          <img
+            [src]="selectedImage || '/assets/placeholder.png'"
+            [alt]="product.name"
+            onerror="this.src='/assets/placeholder.png'"
+          />
+        </div>
+        <div class="image-thumbnails" *ngIf="product.images && product.images.length > 1">
+          <div
+            *ngFor="let image of product.images"
+            class="thumbnail"
+            [class.active]="selectedImage === image"
+            (click)="selectImage(image)"
+          >
+            <img [src]="image" [alt]="product.name" onerror="this.src='/assets/placeholder.png'" />
+          </div>
+        </div>
+      </div>
+
+      <div class="product-details">
+        <div class="product-header">
+          <span class="product-category" *ngIf="product.category">
+            {{ product.category.name }}
+          </span>
+          <h1 class="product-title">{{ product.name }}</h1>
+          <div class="product-meta-badges">
+            <span class="status-badge"
+                  [class.approved]="product.status === 'APPROVED'"
+                  [class.pending]="product.status === 'PENDING'"
+                  [class.rejected]="product.status === 'REJECTED'">
+              {{ product.status }}
+            </span>
+            <span class="stock-badge"
+                  [class.in-stock]="product.stock > 0"
+                  [class.out-of-stock]="product.stock === 0">
+              {{ product.stock > 0 ? (product.stock + ' in Stock') : 'Out of Stock' }}
+            </span>
+          </div>
+        </div>
+
+        <div class="price-section">
+          <div class="price-tag">
+            <span class="price-label">Price</span>
+            <span class="price-value">${{ product.price | number: '1.2-2' }}</span>
+          </div>
+        </div>
+
+        <div class="product-description">
+          <h3>Description</h3>
+          <p>{{ product.description || 'No description available for this product.' }}</p>
+        </div>
+
+        <div class="product-info-grid">
+          <div class="info-card">
+            <span class="info-icon">📦</span>
+            <div class="info-content">
+              <span class="info-label">Stock</span>
+              <span class="info-value">{{ product.stock }} units</span>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <span class="info-icon">✅</span>
+            <div class="info-content">
+              <span class="info-label">Status</span>
+              <span class="info-value">{{ product.status }}</span>
+            </div>
+          </div>
+
+          <div class="info-card" *ngIf="product.seller">
+            <span class="info-icon">👤</span>
+            <div class="info-content">
+              <span class="info-label">Seller</span>
+              <span class="info-value">{{ product.seller.email }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cart Success / Error -->
+        <div class="cart-feedback success" *ngIf="cartSuccess">
+          ✅ Added to cart successfully!
+          <button class="btn-view-cart" (click)="goToCart()">View Cart →</button>
+        </div>
+        <div class="cart-feedback error" *ngIf="cartError">
+          ⚠️ {{ cartError }}
+        </div>
+
+        <!-- Add to Cart Section -->
+        <div class="action-section" *ngIf="product.stock > 0 && product.status === 'APPROVED'">
+          <div class="qty-selector">
+            <span class="qty-label">Quantity</span>
+            <div class="qty-stepper">
+              <button class="qty-btn" (click)="decreaseQty()" [disabled]="quantity <= 1">−</button>
+              <span class="qty-value">{{ quantity }}</span>
+              <button class="qty-btn" (click)="increaseQty()" [disabled]="quantity >= product.stock">+</button>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <button
+              class="btn btn-primary btn-lg"
+              (click)="addToCart()"
+              [disabled]="addingToCart"
+            >
+              <span *ngIf="!addingToCart">🛒 Add to Cart</span>
+              <span *ngIf="addingToCart">Adding...</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="out-of-stock-message" *ngIf="product.stock === 0">
+          <span>⚠️</span>
+          <p>This product is currently out of stock. Please check back later.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

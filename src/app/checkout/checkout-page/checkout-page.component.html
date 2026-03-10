@@ -1,0 +1,302 @@
+<!-- SUCCESS SCREEN -->
+<div class="checkout-success" *ngIf="successOrder">
+  <div class="success-card">
+    <div class="success-animation">
+      <div class="success-circle">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      </div>
+    </div>
+    <h1 class="success-title">Payment Successful!</h1>
+    <p class="success-subtitle">
+      Your order has been placed and payment processed successfully.
+    </p>
+    <div class="order-ref">
+      <span class="order-ref-label">Order ID</span>
+      <span class="order-ref-value">{{ successOrder.id | slice:0:8 }}...</span>
+    </div>
+    <div class="order-amount-card">
+      <div class="amount-row">
+        <span>{{ successOrder.items.length }} item(s) ordered</span>
+        <span class="amount-total">${{ successOrder.totalAmount | number: '1.2-2' }}</span>
+      </div>
+      <div class="status-pill paid">PAID</div>
+    </div>
+    <div class="success-actions">
+      <button class="btn-view-orders" (click)="viewOrders()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="1" y="3" width="15" height="13" />
+          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+          <circle cx="5.5" cy="18.5" r="2.5" />
+          <circle cx="18.5" cy="18.5" r="2.5" />
+        </svg>
+        View My Orders
+      </button>
+      <button class="btn-continue-shopping" (click)="goToProducts()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <path d="M16 10a4 4 0 0 1-8 0" />
+        </svg>
+        Continue Shopping
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKOUT CONTENT -->
+<div class="checkout-page" *ngIf="!successOrder">
+  <div class="checkout-header">
+    <a routerLink="/cart" class="back-link">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="19" y1="12" x2="5" y2="12" />
+        <polyline points="12 19 5 12 12 5" />
+      </svg>
+      Back to Cart
+    </a>
+    <h1 class="checkout-title">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="url(#checkoutGrad)" stroke-width="2">
+        <defs>
+          <linearGradient id="checkoutGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#8b5cf6" />
+            <stop offset="100%" stop-color="#06b6d4" />
+          </linearGradient>
+        </defs>
+        <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+        <line x1="1" y1="10" x2="23" y2="10" />
+      </svg>
+      Secure Checkout
+    </h1>
+    <div class="checkout-steps">
+      <div class="step" [class.done]="currentStep > 1" [class.active]="currentStep === 1"
+        (click)="currentStep > 1 ? goToStep(1) : null">
+        <span class="step-num">1</span> Shipping
+      </div>
+      <div class="step-arrow">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </div>
+      <div class="step" [class.done]="currentStep > 2" [class.active]="currentStep === 2">
+        <span class="step-num">2</span> Payment
+      </div>
+      <div class="step-arrow">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </div>
+      <div class="step" [class.active]="currentStep === 3">
+        <span class="step-num">3</span> Confirm
+      </div>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="alert-error" *ngIf="error">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="15" y1="9" x2="9" y2="15" />
+      <line x1="9" y1="9" x2="15" y2="15" />
+    </svg>
+    {{ error }}
+  </div>
+
+  <!-- Loading -->
+  <div class="checkout-skeleton" *ngIf="loading">
+    <div class="skeleton-block"></div>
+    <div class="skeleton-block short"></div>
+    <div class="skeleton-block"></div>
+  </div>
+
+  <!-- Checkout Layout -->
+  <div class="checkout-layout" *ngIf="!loading && cart && cart.items && cart.items.length > 0">
+
+    <div class="checkout-main">
+      <!-- Step 1: Shipping Address -->
+      <div class="section-card" *ngIf="currentStep === 1">
+        <h2 class="section-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </svg>
+          Shipping Address
+        </h2>
+        <div class="shipping-form">
+          <div class="form-group">
+            <label for="address">Street Address</label>
+            <input type="text" id="address" [(ngModel)]="shippingAddress" placeholder="123 Main Street" />
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="city">City</label>
+              <input type="text" id="city" [(ngModel)]="shippingCity" placeholder="New York" />
+            </div>
+            <div class="form-group">
+              <label for="state">State</label>
+              <input type="text" id="state" [(ngModel)]="shippingState" placeholder="NY" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="zip">ZIP Code</label>
+              <input type="text" id="zip" [(ngModel)]="shippingZip" placeholder="10001" />
+            </div>
+            <div class="form-group">
+              <label for="country">Country</label>
+              <input type="text" id="country" [(ngModel)]="shippingCountry" placeholder="US" />
+            </div>
+          </div>
+          <button class="btn-next-step" [disabled]="!isShippingValid()" (click)="goToStep(2)">
+            Continue to Payment
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Payment -->
+      <div class="section-card" [hidden]="currentStep !== 2">
+        <h2 class="section-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" stroke-width="2">
+            <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+            <line x1="1" y1="10" x2="23" y2="10" />
+          </svg>
+          Payment Details
+        </h2>
+        <div class="payment-form">
+          <div class="card-element-container">
+            <label>Card Information</label>
+            <div class="card-element-wrap" #cardElementRef></div>
+            <div class="card-error" *ngIf="cardError">{{ cardError }}</div>
+          </div>
+          <div class="payment-info">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            <span>Your payment is secured with 256-bit SSL encryption</span>
+          </div>
+          <div class="step-buttons">
+            <button class="btn-back-step" (click)="goToStep(1)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="19" y1="12" x2="5" y2="12" />
+                <polyline points="12 19 5 12 12 5" />
+              </svg>
+              Back
+            </button>
+            <button class="btn-next-step" [disabled]="!cardReady" (click)="goToStep(3)">
+              Review Order
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Review & Confirm -->
+      <div class="section-card" *ngIf="currentStep === 3">
+        <h2 class="section-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+          Review Your Order
+        </h2>
+
+        <!-- Shipping summary -->
+        <div class="review-section">
+          <h3>Shipping To</h3>
+          <p class="shipping-summary">
+            {{ shippingAddress }}<br>
+            {{ shippingCity }}, {{ shippingState }} {{ shippingZip }}<br>
+            {{ shippingCountry }}
+          </p>
+        </div>
+
+        <!-- Items -->
+        <div class="order-items-list">
+          <div class="checkout-item" *ngFor="let item of cart.items">
+            <div class="checkout-item-img">
+              <img [src]="item.product.images?.[0] || '/assets/placeholder.png'" [alt]="item.product.name"
+                onerror="this.src='/assets/placeholder.png'" />
+            </div>
+            <div class="checkout-item-info">
+              <div class="checkout-item-name">{{ item.product.name }}</div>
+              <div class="checkout-item-meta">
+                <span class="qty-badge">Qty: {{ item.quantity }}</span>
+                <span class="price-each">${{ item.priceSnapshot | number: '1.2-2' }} each</span>
+              </div>
+            </div>
+            <div class="checkout-item-subtotal">
+              ${{ (item.priceSnapshot * item.quantity) | number: '1.2-2' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="checkout-sidebar">
+      <div class="price-breakdown-card">
+        <h3>Order Summary</h3>
+
+        <div class="price-row" *ngFor="let item of cart.items">
+          <span>{{ item.product.name }} (x{{ item.quantity }})</span>
+          <span>${{ (item.priceSnapshot * item.quantity) | number: '1.2-2' }}</span>
+        </div>
+
+        <div class="price-row shipping">
+          <span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="3" width="15" height="13" />
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+              <circle cx="5.5" cy="18.5" r="2.5" />
+              <circle cx="18.5" cy="18.5" r="2.5" />
+            </svg>
+            Shipping
+          </span>
+          <span class="free-text">FREE</span>
+        </div>
+
+        <div class="price-divider"></div>
+
+        <div class="price-total-row">
+          <span>Total</span>
+          <span class="total-amount">${{ getCartTotal() | number: '1.2-2' }}</span>
+        </div>
+
+        <div class="item-count-info">
+          {{ getTotalItems() }} item(s) in your order
+        </div>
+
+        <button *ngIf="currentStep === 3" class="btn-place-order" (click)="placeOrder()" [disabled]="placing">
+          <span *ngIf="!placing">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+            Pay ${{ getCartTotal() | number: '1.2-2' }}
+          </span>
+          <span *ngIf="placing" class="btn-loading">
+            <span class="spinner-small"></span>
+            Processing Payment...
+          </span>
+        </button>
+
+        <div class="secure-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+          Secured by Stripe
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
